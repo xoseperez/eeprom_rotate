@@ -141,7 +141,7 @@ void EEPROM_Rotate::begin(size_t size) {
 
             // This new sector is newer if...
             bool newer = false;
-            bool split = _sectors - 1;
+            uint8_t split = _sectors - 1;
             if ((value < split) && (split < best_value)) {
                 newer = true;
             } else if ((best_value < split) && (split < value)) {
