@@ -51,10 +51,11 @@ def git_parse_remote(cwd=None, remote="origin"):
 
     if remote_url.startswith("git"):
         _, _, repo = remote_url.partition(":")
-        path = repo.replace(".git", "")
     elif remote_url.startswith("https"):
         parsed = urlparse(remote_url)
-        path = parsed.path[1:]
+        repo = parsed.path[1:]
+
+    path = repo.replace(".git", "")
     return path.split("/")
 
 

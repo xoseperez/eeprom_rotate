@@ -3,9 +3,8 @@
 This is a wrapper around the Arduino Core for ESP8266 EEPROM library that handles sector rotating while keeping full compatibility with the original API.
 
 [![version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg)](CHANGELOG.md)
--brightgreen.svg)](CHANGELOG.md)
-[![travis](https://travis-ci.org/xoseperez/eeprom_rotate.git.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate.git)
-[![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate.git/dashboard)
+[![travis](https://travis-ci.org/xoseperez/eeprom_rotate.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate)
+[![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate/dashboard)
 [![license](https://img.shields.io/github/license/xoseperez/eeprom_rotate.svg)](LICENSE)
 <br />
 [![donate](https://img.shields.io/badge/donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=xose%2eperez%40gmail%2ecom&lc=US&no_note=0&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHostedGuest)
