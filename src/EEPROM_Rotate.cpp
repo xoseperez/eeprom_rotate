@@ -23,18 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Arduino.h"
 #include "EEPROM_Rotate.h"
+
 extern "C" uint32_t _SPIFFS_end;
-
-// -----------------------------------------------------------------------------
-// CONSTRUCTOR
-// -----------------------------------------------------------------------------
-
-EEPROM_Rotate::EEPROM_Rotate(uint32_t sector) {
-    _sector = sector;
-    if (0 == _sector || _sector > _getLastSector()) {
-        _sector = _getLastSector();
-    }
-}
 
 // -----------------------------------------------------------------------------
 // PUBLIC *NEW* METHODS

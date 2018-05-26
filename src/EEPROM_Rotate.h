@@ -41,7 +41,8 @@ class EEPROM_Rotate: public EEPROMClass {
 
     public:
 
-        EEPROM_Rotate(uint32_t sector = 0);
+        EEPROM_Rotate(void): EEPROMClass(_getLastSector()) {};
+        EEPROM_Rotate(uint32_t sector): EEPROMClass(sector) {};
 
         bool rotate(uint8_t sectors);
         bool offset(uint8_t offset);
