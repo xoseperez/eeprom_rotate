@@ -41,13 +41,14 @@ class EEPROM_Rotate: public EEPROMClass {
 
     public:
 
-        EEPROM_Rotate(void): EEPROMClass(_getLastSector()) {};
-        EEPROM_Rotate(uint32_t sector): EEPROMClass(sector) {};
+        EEPROM_Rotate(void): EEPROMClass(last()), _base(last()) {};
+        EEPROM_Rotate(uint32_t sector): EEPROMClass(sector), _base(sector) {};
 
-        bool rotate(uint8_t sectors);
+        bool sectors(uint8_t sectors);
         bool offset(uint8_t offset);
-        uint8_t last();
-        uint8_t current();
+        uint32_t base();
+        uint32_t last();
+        uint32_t current();
         uint8_t sectors();
 
         void begin(size_t size);
@@ -59,12 +60,12 @@ class EEPROM_Rotate: public EEPROMClass {
 
     private:
 
+        uint32_t _base = 0;
         uint8_t _sectors = 1;
         uint16_t _offset = 0;
         uint8_t _sector_index = 0;
         uint8_t _sector_value = 0;
 
-        uint32_t _getLastSector();
         uint32_t _getSector(uint8_t index);
         uint16_t _calculateCRC();
         bool _checkCRC();

@@ -30,8 +30,8 @@ extern "C" uint32_t _SPIFFS_end;
 // PUBLIC *NEW* METHODS
 // -----------------------------------------------------------------------------
 
-bool EEPROM_Rotate::rotate(uint8_t sectors) {
-    if (sectors > _getLastSector()) return false;
+bool EEPROM_Rotate::sectors(uint8_t sectors) {
+    if (sectors > _base) return false;
     _sectors = sectors;
     return true;
 }
@@ -42,11 +42,15 @@ bool EEPROM_Rotate::offset(uint8_t offset) {
     return true;
 }
 
-uint8_t EEPROM_Rotate::last() {
-    return _getLastSector();
+uint32_t EEPROM_Rotate::last() {
+    return ((uint32_t)&_SPIFFS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
 }
 
-uint8_t EEPROM_Rotate::current() {
+uint32_t EEPROM_Rotate::base() {
+    return _base;
+}
+
+uint32_t EEPROM_Rotate::current() {
     return _sector;
 }
 
@@ -72,7 +76,7 @@ bool EEPROM_Rotate::eraseAll() {
 void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
 
     if (0 == sector) sector = _sector;
-    if (sector > _getLastSector() + 4) return;
+    if (sector > last() + 4) return;
 
     char ascii[17];
     memset(ascii, ' ', 16);
@@ -229,12 +233,8 @@ bool EEPROM_Rotate::commit() {
 // PRIVATE METHODS
 // -----------------------------------------------------------------------------
 
-uint32_t EEPROM_Rotate::_getLastSector() {
-    return ((uint32_t)&_SPIFFS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
-}
-
 uint32_t EEPROM_Rotate::_getSector(uint8_t index) {
-    return _getLastSector() - index;
+    return _base - index;
 }
 
 uint16_t EEPROM_Rotate::_calculateCRC() {

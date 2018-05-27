@@ -12,7 +12,7 @@ void setup() {
     delay(2000);
 
     Serial.printf("Erasing all sectors\n");
-    EEPROMr.rotate(4);
+    EEPROMr.sectors(4);
     EEPROMr.eraseAll();
 
 }
