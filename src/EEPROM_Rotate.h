@@ -48,6 +48,7 @@ class EEPROM_Rotate: public EEPROMClass {
         bool offset(uint8_t offset);
         uint8_t last();
         uint8_t current();
+        uint8_t sectors();
 
         void begin(size_t size);
         bool commit();

@@ -50,6 +50,10 @@ uint8_t EEPROM_Rotate::current() {
     return _sector;
 }
 
+uint8_t EEPROM_Rotate::sectors() {
+    return _sectors;
+}
+
 bool EEPROM_Rotate::erase(uint32_t sector) {
     noInterrupts();
     bool ret = (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
@@ -68,6 +72,7 @@ bool EEPROM_Rotate::eraseAll() {
 void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
 
     if (0 == sector) sector = _sector;
+    if (sector > _getLastSector() + 4) return;
 
     char ascii[17];
     memset(ascii, ' ', 16);
