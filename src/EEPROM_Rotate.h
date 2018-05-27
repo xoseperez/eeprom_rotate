@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <EEPROM.h>
 #include <Stream.h>
-#include <spi_flash.h>
 
 #ifdef DEBUG_EEPROM_ROTATE_PORT
 #define DEBUG_EEPROM_ROTATE(...) DEBUG_EEPROM_ROTATE_PORT.printf( __VA_ARGS__ )
