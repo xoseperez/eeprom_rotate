@@ -46,6 +46,10 @@ uint8_t EEPROM_Rotate::last() {
     return _getLastSector();
 }
 
+uint8_t EEPROM_Rotate::current() {
+    return _sector;
+}
+
 bool EEPROM_Rotate::erase(uint32_t sector) {
     noInterrupts();
     bool ret = (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
@@ -161,22 +165,14 @@ void EEPROM_Rotate::begin(size_t size) {
 
     }
 
-    // If no sector has passed the checks,
-    // then it might be a new installation.
-    // It will then keep data from first sector (standard EEPROM).
-
     // Re-read the data from the best index sector
-    _sector = _getSector(best_index);
-    DEBUG_EEPROM_ROTATE("Sector #%u has been flagged as current\n", _sector);
-    EEPROMClass::begin(size);
-    _sector_value = read(_offset + EEPROM_ROTATE_COUNTER_OFFSET) + 1;
-
-    // Update sector for next write
-    _sector_index = (best_index + 1) % _sectors;
+    _sector_index = best_index;
     _sector = _getSector(_sector_index);
+    EEPROMClass::begin(size);
+    _sector_value = read(_offset + EEPROM_ROTATE_COUNTER_OFFSET);
 
-    DEBUG_EEPROM_ROTATE("Next write sector will be #%u\n", _sector);
-    DEBUG_EEPROM_ROTATE("Next magic value will be %u\n", _sector_value);
+    DEBUG_EEPROM_ROTATE("Current sector is #%u\n", _sector);
+    DEBUG_EEPROM_ROTATE("Current magic value is #%u\n", _sector_value);
 
 }
 
@@ -187,6 +183,18 @@ bool EEPROM_Rotate::commit() {
     if (!_dirty) return true;
     if (!_data) return false;
 
+    // Backup current values
+    uint8_t index_backup = _sector_index;
+    uint8_t value_backup = _sector_value;
+
+    // Update sector for next write
+    _sector_index = (_sector_index + 1) % _sectors;
+    _sector = _getSector(_sector_index);
+    _sector_value++;
+
+    DEBUG_EEPROM_ROTATE("Writing to sector #%u\n", _sector);
+    DEBUG_EEPROM_ROTATE("Writing magic value #%u\n", _sector_value);
+
     // Update the counter & crc bytes
     uint16_t crc = _calculateCRC();
     write(_offset + EEPROM_ROTATE_CRC_OFFSET, (crc >> 8) & 0xFF);
@@ -196,18 +204,15 @@ bool EEPROM_Rotate::commit() {
     // Perform the commit
     bool ret = EEPROMClass::commit();
 
-    // If commit succeeded...
-    if (ret) {
+    // If commit failed restore values
+    if (!ret) {
 
-        // Update next value
-        _sector_value++;
+        DEBUG_EEPROM_ROTATE("Commit to sector #%u failed, restoring\n", _sector);
 
-        // Update sector for next write
-        _sector_index = (_sector_index + 1) % _sectors;
+        // Restore values
+        _sector_index = index_backup;
+        _sector_value = value_backup;
         _sector = _getSector(_sector_index);
-
-        DEBUG_EEPROM_ROTATE("Next write sector will be #%u\n", _sector);
-        DEBUG_EEPROM_ROTATE("Next magic value will be %u\n", _sector_value);
 
     }
 
