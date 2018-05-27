@@ -53,7 +53,7 @@ class EEPROM_Rotate: public EEPROMClass {
 
         bool erase(uint32_t sector);
         bool eraseAll();
-        void dump(Stream & debug);
+        void dump(Stream & debug, uint32_t sector = 0);
 
     private:
 

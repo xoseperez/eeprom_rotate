@@ -61,7 +61,9 @@ bool EEPROM_Rotate::eraseAll() {
     return ret;
 }
 
-void EEPROM_Rotate::dump(Stream & debug) {
+void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
+
+    if (0 == sector) sector = _sector;
 
     char ascii[17];
     memset(ascii, ' ', 16);
@@ -73,20 +75,30 @@ void EEPROM_Rotate::dump(Stream & debug) {
     }
     debug.printf("\n------------------------------------------------------");
 
+    uint8_t * data = new uint8_t[16];
+
     for (uint16_t address = 0; address < SPI_FLASH_SEC_SIZE; address++) {
+
         if ((address % 16) == 0) {
+            noInterrupts();
+            spi_flash_read(sector * SPI_FLASH_SEC_SIZE + address, reinterpret_cast<uint32_t*>(data), 16);
+            interrupts();
             if (address > 0) {
                 debug.print(ascii);
                 memset(ascii, ' ', 16);
             }
             debug.printf("\n0x%04X:  ", address);
         }
-        uint8_t data = read(address);
-        if (31 < data && data < 127) ascii[address % 16] = (char) data;
-        debug.printf("%02X ", data);
-    }
-    debug.print(ascii);
 
+        uint8_t b = data[address % 16];
+        if (31 < b && b < 127) ascii[address % 16] = (char) b;
+        debug.printf("%02X ", b);
+
+    }
+
+    delete[] data;
+
+    debug.print(ascii);
     debug.printf("\n\n");
 
 }
