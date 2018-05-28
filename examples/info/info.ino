@@ -1,5 +1,5 @@
 /*
- *  This sketch shows sector hoping acros reboots
+ *  This sketch shows basic info about the configuration
  */
 
 #include <EEPROM_Rotate.h>
