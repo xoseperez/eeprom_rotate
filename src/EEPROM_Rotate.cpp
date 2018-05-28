@@ -62,6 +62,41 @@ uint8_t EEPROM_Rotate::sectors() {
     return _sectors;
 }
 
+bool EEPROM_Rotate::backup(uint32_t target) {
+
+    // Backup to the latest sector by default
+    if (0 == target) target = last();
+
+    // Do not backup if sector is already current
+    if (_sector == target) return true;
+
+    // Backup current index
+    uint32_t backup_index = _sector_index;
+
+    // Calculate new index (must be previous to target)
+    _sector_index = _getIndex(target);
+    if (0 == _sector_index) {
+        _sector_index = _sectors - 1;
+    } else {
+        --_sector_index;
+    }
+
+    // Flag as dirty to force write
+    _dirty = true;
+
+    // Do commit
+    bool ret = commit();
+
+    // If commit failed restore index
+    if (!ret) {
+        _sector_index = backup_index;
+        _sector = _getSector(_sector_index);
+    }
+
+    return ret;
+
+}
+
 bool EEPROM_Rotate::erase(uint32_t sector) {
     noInterrupts();
     bool ret = (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
@@ -239,6 +274,10 @@ bool EEPROM_Rotate::commit() {
 
 uint32_t EEPROM_Rotate::_getSector(uint8_t index) {
     return _base - index;
+}
+
+uint8_t EEPROM_Rotate::_getIndex(uint32_t sector) {
+    return _base - sector;
 }
 
 uint16_t EEPROM_Rotate::_calculateCRC() {

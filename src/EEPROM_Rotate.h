@@ -49,6 +49,7 @@ class EEPROM_Rotate: public EEPROMClass {
         uint32_t last();
         uint32_t current();
         uint8_t sectors();
+        bool backup(uint32_t target = 0);
 
         void begin(size_t size);
         bool commit();
@@ -66,6 +67,7 @@ class EEPROM_Rotate: public EEPROMClass {
         uint8_t _sector_value = 0;
 
         uint32_t _getSector(uint8_t index);
+        uint8_t _getIndex(uint32_t sector);
         uint16_t _calculateCRC();
         bool _checkCRC();
 
