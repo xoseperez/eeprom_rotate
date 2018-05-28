@@ -43,12 +43,12 @@ class EEPROM_Rotate: public EEPROMClass {
         EEPROM_Rotate(void): EEPROMClass(last()), _base(last()) {};
         EEPROM_Rotate(uint32_t sector): EEPROMClass(sector), _base(sector) {};
 
-        bool sectors(uint8_t sectors);
+        bool pool(uint8_t size);
         bool offset(uint8_t offset);
         uint32_t base();
         uint32_t last();
         uint32_t current();
-        uint8_t sectors();
+        uint8_t pool();
         bool backup(uint32_t target = 0);
 
         void begin(size_t size);
@@ -61,7 +61,7 @@ class EEPROM_Rotate: public EEPROMClass {
     protected:
 
         uint32_t _base = 0;
-        uint8_t _sectors = 1;
+        uint8_t _pool_size = 1;
         uint16_t _offset = 0;
         uint8_t _sector_index = 0;
         uint8_t _sector_value = 0;

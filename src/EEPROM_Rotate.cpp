@@ -34,38 +34,74 @@ extern "C" uint32_t _SPIFFS_end;
 // PUBLIC *NEW* METHODS
 // -----------------------------------------------------------------------------
 
-bool EEPROM_Rotate::sectors(uint8_t sectors) {
-    if (sectors > _base) return false;
-    _sectors = sectors;
+/**
+ * @brief Defines the sector pool size that will be used for EEPROM rotation.
+ * Must be called before the begin method.
+ * @param {uint8_t} sectors     Number of sectors (from 1 to 10)
+ * @returns {bool}              True if seccessfully set
+ */
+bool EEPROM_Rotate::pool(uint8_t size) {
+    if (size < 1 || 10 < size) return false;
+    _pool_size = size;
     return true;
 }
 
+/**
+ * @brief Defines the offset inside the sector memory where the magic bytes will be stored.
+ * The library uses 3 bytes to track last valid sector, so there must be at least 3
+ * bytes available in the memory buffer from the offset onwards.
+ * Must be called before the begin method.
+ * @param {uint8_t} offset      Offset
+ * @returns {bool}              True if seccessfully set
+ */
 bool EEPROM_Rotate::offset(uint8_t offset) {
     if (offset + 3 > SPI_FLASH_SEC_SIZE) return false;
     _offset = offset;
     return true;
 }
 
+/**
+ * @brief Returns the number of the last available sector for EEPROM.
+ * This is also the sector that the default EEPROM library uses.
+ * @returns {uint32_t}          Last available sector for EEPROM storing
+ */
 uint32_t EEPROM_Rotate::last() {
     return ((uint32_t)&_SPIFFS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
 }
 
+/**
+ * @brief Returns the base sector for current rotating configuration.
+ * @returns {uint32_t}          Base sector
+ */
 uint32_t EEPROM_Rotate::base() {
     return _base;
 }
 
+/**
+ * @brief Returns the sector index whose contents match those of the EEPROM data buffer.
+ * @returns {uint32_t}          Current sector
+ */
 uint32_t EEPROM_Rotate::current() {
     return _sector;
 }
 
-uint8_t EEPROM_Rotate::sectors() {
-    return _sectors;
+/**
+ * @brief Returns the number of sectors used for rotating EEPROM.
+ * @returns {uint8_t}           Sector pool size
+ */
+uint8_t EEPROM_Rotate::pool() {
+    return _pool_size;
 }
 
+/**
+ * @brief Backups the current data to the given sector.
+ * @param {uint32_t} target     Target sector (defaults to base sector)
+ * @returns {bool}              True if seccessfully copied
+ */
 bool EEPROM_Rotate::backup(uint32_t target) {
 
     // Backup to the latest sector by default
-    if (0 == target) target = last();
+    if (0 == target) target = base();
 
     // Do not backup if sector is already current
     if (_sector == target) return true;
@@ -76,7 +112,7 @@ bool EEPROM_Rotate::backup(uint32_t target) {
     // Calculate new index (must be previous to target)
     _sector_index = _getIndex(target);
     if (0 == _sector_index) {
-        _sector_index = _sectors - 1;
+        _sector_index = _pool_size - 1;
     } else {
         --_sector_index;
     }
@@ -97,6 +133,11 @@ bool EEPROM_Rotate::backup(uint32_t target) {
 
 }
 
+/**
+ * @brief Erases the given sector. Use with caution.
+ * @param {uint32_t} sector     Sector to erase
+ * @returns {bool}              True if seccessfully erased
+ */
 bool EEPROM_Rotate::erase(uint32_t sector) {
     noInterrupts();
     bool ret = (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
@@ -104,14 +145,23 @@ bool EEPROM_Rotate::erase(uint32_t sector) {
     return ret;
 }
 
+/**
+ * @brief Erases all the sectors in the current EEPROM sector pool. Use with caution.
+ * @returns {bool}              True if seccessfully erased
+ */
 bool EEPROM_Rotate::eraseAll() {
     bool ret = true;
-    for (uint32_t index = 0; index < _sectors; index++) {
+    for (uint32_t index = 0; index < _pool_size; index++) {
         ret = ret & erase(_getSector(index));
     }
     return ret;
 }
 
+/**
+ * @brief Dumps the EEPROM data to the given stream in a human-friendly way.
+ * @param {Stream &}  debug     Stream to dump the data to
+ * @param {uint32_t} sector     Sector to dump (default to current sector)
+ */
 void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
 
     if (0 == sector) sector = _sector;
@@ -159,13 +209,18 @@ void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
 // OVERWRITTEN METHODS
 // -----------------------------------------------------------------------------
 
+/**
+ * @brief Loads 'size' bytes of data into memory for EEPROM emulation from the
+ * latest valid sector in the sector pool
+ * @param {size_t} size         Data size to read
+ */
 void EEPROM_Rotate::begin(size_t size) {
 
     uint32_t best_index = 0;
     uint8_t best_value = 0xFF;
     bool first = true;
 
-    for (uint32_t index = 0; index < _sectors; index++) {
+    for (uint32_t index = 0; index < _pool_size; index++) {
 
         // load the sector data
         // Sector count goes downward,
@@ -195,7 +250,7 @@ void EEPROM_Rotate::begin(size_t size) {
 
             // This new sector is newer if...
             bool newer = false;
-            uint8_t split = _sectors - 1;
+            uint8_t split = _pool_size - 1;
             if ((value < split) && (split < best_value)) {
                 newer = true;
             } else if ((best_value < split) && (split < value)) {
@@ -224,6 +279,10 @@ void EEPROM_Rotate::begin(size_t size) {
 
 }
 
+/**
+ * @brief Writes data from memory to the next sector in the sector pool and flags it as current sector
+ * @returns {bool}      True if successfully written
+ */
 bool EEPROM_Rotate::commit() {
 
     // Check if we are really going to write
@@ -236,7 +295,7 @@ bool EEPROM_Rotate::commit() {
     uint8_t value_backup = _sector_value;
 
     // Update sector for next write
-    _sector_index = (_sector_index + 1) % _sectors;
+    _sector_index = (_sector_index + 1) % _pool_size;
     _sector = _getSector(_sector_index);
     _sector_value++;
 
@@ -272,14 +331,31 @@ bool EEPROM_Rotate::commit() {
 // PRIVATE METHODS
 // -----------------------------------------------------------------------------
 
+/**
+ * @brief Returns sector from index
+ * @param {uint8_t} index       Sector index
+ * @returns {uint32_t}          Sector number
+ * @protected
+ */
 uint32_t EEPROM_Rotate::_getSector(uint8_t index) {
     return _base - index;
 }
 
+/**
+ * @brief Returns index for sector
+ * @param {uint32_t} sector     Sector number
+ * @returns {uint8_t}           Sector index
+ * @protected
+ */
 uint8_t EEPROM_Rotate::_getIndex(uint32_t sector) {
     return _base - sector;
 }
 
+/**
+ * @brief Calculates the CRC of the data in memory (except for the magic bytes)
+ * @returns {uint16_t}          CRC
+ * @protected
+ */
 uint16_t EEPROM_Rotate::_calculateCRC() {
     uint16_t crc = 0;
     for (uint16_t address = 0; address < _size; address++) {
@@ -289,6 +365,11 @@ uint16_t EEPROM_Rotate::_calculateCRC() {
     return crc;
 }
 
+/**
+ * @brief Compares the CRC of the data in memory against the stored one
+ * @returns {bool}              True if they match, so data is OK
+ * @protected
+ */
 bool EEPROM_Rotate::_checkCRC() {
     uint16_t calculated = _calculateCRC();
     uint16_t stored =

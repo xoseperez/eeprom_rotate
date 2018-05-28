@@ -15,7 +15,7 @@ void setup() {
     Serial.println();
     delay(2000);
 
-    EEPROMr.sectors(4);
+    EEPROMr.pool(4);
     EEPROMr.begin(4096);
     Serial.println();
 

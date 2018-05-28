@@ -4,3 +4,6 @@
 
 # PlatformIO folders
 .pio*
+
+# Documentation
+docs/*

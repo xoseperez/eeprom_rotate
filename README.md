@@ -20,9 +20,11 @@ This is what this library does.
 
 ## How does it work
 
+Instead of using a single sector to persist the data from the emulated EEPROM, this library uses a number of sectors to do so: a sector pool.
+
 The library overwrites two methods of the original one: `begin` and `commit`.
 
-The `begin` method will load the data from all the available sectors one after the other trying to figure out which one has the **latest valid information**. To do
+The `begin` method will load the data from all the sectors in the sector pool one after the other trying to figure out which one has the **latest valid information**. To do
 this it checks two values:
 
 * A 2-bytes CRC
@@ -32,34 +34,39 @@ These values are stored in a certain position in the sector (at the very beginni
 
 The CRC is calculated based on the contents of the sector (except for those special 3 bytes). If the calculated CRC matches that stored in the sector then the library checks the auto-increment and selects the sector with the most recent number (taking overflows into account, of course).
 
-Those special values are stored by the overwritten `commit` method prior to the
-actual commit.
+Those special values are stored by the overwritten `commit` method prior to the actual commit.
 
-After every successful commit, the library will hop to the next sector for the next commit. This way, in case of a power failure in the middle of a commit, the  CRC for that sector will fail and the library will use the data in the latest known-good sector.
+With every commit, the library will hop to the next sector. This way, in case of a power failure in the middle of a commit, the CRC for that sector will fail and the library will use the data in the latest known-good sector.
 
 ## API
 
-The library inherits form the Arduino Core for ESP8266 EEPROM library, and it shares the same API. You can just replace one with the other. The same public methods with the same signature.
+The library inherits form the Arduino Core for ESP8266 EEPROM library, and it shares the same API. You can just replace one with the other. The same public methods with the same signature. By default it will use the same sector as with the EEPROM library (sector 1019 for 4Mb boards, sector 251 for 1Mb boards), or you can specify another sector in the constructor. It can behave like a drop-in replacement.
 
-By default the library uses the same default sector as the original (the fifth sector counting from the end) and just that sector. So it will behave just like the original.
-
-The initial sector will be the same as with the EEPROM library (sector 1019 for 4Mb boards, sector 251 for 1Mb boards). The other sectors are the ones counting from the initial one downwards. This means that if we set up a sector rotation of 4 for a 4Mb board using default initial sector, the used sectors will be 1019, 1018, 1017 and 1016.
+If you define a sector pool size different that one (using the `pool` method). The other sectors are the ones counting from the base one downwards. This means that if we set up a sector pool size of 4 for a 4Mb board using default base sector, the used sectors will be 1019, 1018, 1017 and 1016.
 
 You must take this into account since it reduces the available size for program memory and OTA updates.
 
 The library exposes a set of new methods to configure the sector rotating and performing other special actions:
 
-#### void rotate(uint8_t sectors)
+#### void pool(uint8_t size)
 
-Set the number of sectors that the library will use. The default value is 1. It must be called before the `begin` method. Sectors are indexed counting downwards.
+Set the sector pool size the library will use. The default value is 1. The valid range is from 1 to 10. It must be called before the `begin` method.
+
+#### uint8_t pool()
+
+Returns the number of sectors used for rotating EEPROM.
 
 #### void offset(uint8_t offset)
 
-Define the offset in the sector where the special auto-increment and CRC values will be stores. The default value is 0. This special data uses 3 bytes of space in the EEPROM.
+Define the offset in the sector where the special auto-increment and CRC values will be stores. The default value is 0. This special data uses 3 bytes of space in the emulated EEPROM memory buffer.
+
+#### uint8_t base()
+
+Returns the base sector. Note that sectors in use are those N sectors before the base sector, including the base sector. If base sector is 1019 and sector pool size is 4, these sectors will be 1019, 1018, 1017 and 1016.
 
 #### uint8_t last()
 
-Returns the number of the last available sector for EEPROM. You can use this value to choose a sensible rotation size:
+Returns the number of the last available sector for EEPROM. This is also the sector that the default EEPROM library uses. You can use this value to choose a sensible pool size:
 
 ```
 uint8_t size = 0;
@@ -70,9 +77,17 @@ if (EEPROM.last() > 1000) { // 4Mb boards
 } else {
     size = 1;
 }
-EEPROM.rotate(size);
+EEPROM.pool(size);
 EEPROM.begin();
 ```
+
+#### uint8_t current()
+
+Returns the sector index whose contents match those of the EEPROM memory buffer.
+
+#### bool backup(uint32_t sector) | bool backup()
+
+Backups the current data to the given sector. If no sector is specified the base sector will be used. This is useful before an OTA update to move the configuration to the end of the memory space reducing the risk of it being overwritten by the OTA image.
 
 #### bool erase(uint32_t sector)
 
@@ -82,9 +97,9 @@ Erases the given sector. Use with caution.
 
 Erases all the sections in the rotation pool. Use with caution.
 
-#### void dump(Stream & debug)
+#### void dump(Stream & debug, uint32_t sector) | void dump(Stream & debug)
 
-Dumps the EEPROM data to the given stream in a human-friendly way.
+Dumps the EEPROM data to the given stream in a human-friendly way. If no sector is specified it will dump the data for the current sector.
 
 ## Notes
 
@@ -93,7 +108,7 @@ Dumps the EEPROM data to the given stream in a human-friendly way.
 The original EEPROM library automatically instantiates an EEPROM object that's
 already available to use. This consumes little memory (since the data buffer is
 only created and populated when calling `begin`). But anyway if you don't want to
-have a unused object around you can disable the object instantiation by adding
+have a unused object around you can disable the object instantiation by using
 the `NO_GLOBAL_EEPROM` build flag.
 
 ## License
