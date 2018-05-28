@@ -42,7 +42,7 @@ bool EEPROM_Rotate::sectors(uint8_t sectors) {
 
 bool EEPROM_Rotate::offset(uint8_t offset) {
     if (offset + 3 > SPI_FLASH_SEC_SIZE) return false;
-    _offset = offset;
+    _magic_offset = offset;
     return true;
 }
 
@@ -139,7 +139,7 @@ void EEPROM_Rotate::begin(size_t size) {
         EEPROMClass::begin(size);
 
         // get sector value
-        uint8_t value = read(_offset + EEPROM_ROTATE_COUNTER_OFFSET);
+        uint8_t value = read(_magic_offset + EEPROM_ROTATE_COUNTER_OFFSET);
         DEBUG_EEPROM_ROTATE("Magic value for sector #%u is %u\n", _sector, value);
 
         // validate content
@@ -182,7 +182,7 @@ void EEPROM_Rotate::begin(size_t size) {
     _sector_index = best_index;
     _sector = _getSector(_sector_index);
     EEPROMClass::begin(size);
-    _sector_value = read(_offset + EEPROM_ROTATE_COUNTER_OFFSET);
+    _sector_value = read(_magic_offset + EEPROM_ROTATE_COUNTER_OFFSET);
 
     DEBUG_EEPROM_ROTATE("Current sector is #%u\n", _sector);
     DEBUG_EEPROM_ROTATE("Current magic value is #%u\n", _sector_value);
@@ -210,9 +210,9 @@ bool EEPROM_Rotate::commit() {
 
     // Update the counter & crc bytes
     uint16_t crc = _calculateCRC();
-    write(_offset + EEPROM_ROTATE_CRC_OFFSET, (crc >> 8) & 0xFF);
-    write(_offset + EEPROM_ROTATE_CRC_OFFSET + 1, crc & 0xFF);
-    write(_offset + EEPROM_ROTATE_COUNTER_OFFSET, _sector_value);
+    write(_magic_offset + EEPROM_ROTATE_CRC_OFFSET, (crc >> 8) & 0xFF);
+    write(_magic_offset + EEPROM_ROTATE_CRC_OFFSET + 1, crc & 0xFF);
+    write(_magic_offset + EEPROM_ROTATE_COUNTER_OFFSET, _sector_value);
 
     // Perform the commit
     bool ret = EEPROMClass::commit();
@@ -244,7 +244,7 @@ uint32_t EEPROM_Rotate::_getSector(uint8_t index) {
 uint16_t EEPROM_Rotate::_calculateCRC() {
     uint16_t crc = 0;
     for (uint16_t address = 0; address < _size; address++) {
-        if (_offset <= address && address <= _offset + 2) continue;
+        if (_magic_offset <= address && address <= _magic_offset + 2) continue;
         crc = crc + read(address);
     }
     return crc;
@@ -253,8 +253,8 @@ uint16_t EEPROM_Rotate::_calculateCRC() {
 bool EEPROM_Rotate::_checkCRC() {
     uint16_t calculated = _calculateCRC();
     uint16_t stored =
-        (read(_offset + EEPROM_ROTATE_CRC_OFFSET) << 8) +
-        read(_offset + EEPROM_ROTATE_CRC_OFFSET + 1);
+        (read(_magic_offset + EEPROM_ROTATE_CRC_OFFSET) << 8) +
+        read(_magic_offset + EEPROM_ROTATE_CRC_OFFSET + 1);
     DEBUG_EEPROM_ROTATE("Calculated CRC: 0x%04X\n", calculated);
     DEBUG_EEPROM_ROTATE("Stored CRC    : 0x%04X\n", stored);
     return (calculated == stored);
