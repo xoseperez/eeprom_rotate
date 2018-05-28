@@ -61,7 +61,7 @@ class EEPROM_Rotate: public EEPROMClass {
 
         uint32_t _base = 0;
         uint8_t _sectors = 1;
-        uint16_t _magic_offset = 0;
+        uint16_t _offset = 0;
         uint8_t _sector_index = 0;
         uint8_t _sector_value = 0;
 
