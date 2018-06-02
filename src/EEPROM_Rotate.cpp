@@ -94,6 +94,16 @@ uint8_t EEPROM_Rotate::pool() {
 }
 
 /**
+ * @brief Returns the number of sectors reserved to EEPROM in the memory layout
+ * @returns {uint8_t}           Number of sectors
+ */
+uint8_t EEPROM_Rotate::reserved() {
+    uint32_t fs_end = (uint32_t)&_SPIFFS_end - 0x40200000;
+    uint8_t sectors = (ESP.getFlashChipSize() - fs_end) / SPI_FLASH_SEC_SIZE - 4;
+    return sectors;
+}
+
+/**
  * @brief Backups the current data to the given sector.
  * @param {uint32_t} target     Target sector (defaults to base sector)
  * @returns {bool}              True if seccessfully copied
@@ -337,8 +347,7 @@ bool EEPROM_Rotate::commit() {
  * @protected
  */
 void EEPROM_Rotate::_auto() {
-    uint32_t fs_end = (uint32_t)&_SPIFFS_end - 0x40200000;
-    uint32_t size = (ESP.getFlashChipSize() - fs_end) / SPI_FLASH_SEC_SIZE - 4;
+    uint8_t size = reserved();
     if (size > 10) size = 10;
     if (size < 1) size = 1;
     _pool_size = size;

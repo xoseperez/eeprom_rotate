@@ -53,6 +53,7 @@ class EEPROM_Rotate: public EEPROMClass {
         uint32_t last();
         uint32_t current();
         uint8_t pool();
+        uint8_t reserved();
         bool backup(uint32_t target = 0);
 
         void begin(size_t size);

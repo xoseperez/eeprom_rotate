@@ -10,3 +10,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Examples on how to use custom memory layouts
 - Auto-discover EEPROM pool size based on memory layout
+- OTA example
