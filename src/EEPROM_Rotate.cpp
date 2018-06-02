@@ -1,6 +1,6 @@
 /*
 
-EEPROM Rotate 0.1.0
+EEPROM Rotate 0.1.1
 
 EEPROM wrapper for ESP8266
 
@@ -331,11 +331,9 @@ bool EEPROM_Rotate::commit() {
 // PRIVATE METHODS
 // -----------------------------------------------------------------------------
 
-extern "C" uint32_t _SPIFFS_end;
-
 /**
  * @brief Calculates and automatically sets
- * the number of sectors available for EEPROM.
+ * the pool size based on the memory layout
  * @protected
  */
 void EEPROM_Rotate::_auto() {

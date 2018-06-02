@@ -7,3 +7,6 @@
 
 # Documentation
 docs/*
+
+# Credentials
+credentials.h
