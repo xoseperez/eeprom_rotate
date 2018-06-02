@@ -66,7 +66,7 @@ bool EEPROM_Rotate::offset(uint8_t offset) {
  * @returns {uint32_t}          Last available sector for EEPROM storing
  */
 uint32_t EEPROM_Rotate::last() {
-    return ((uint32_t)&_SPIFFS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
+    return ESP.getFlashChipSize() / SPI_FLASH_SEC_SIZE - 5;
 }
 
 /**
@@ -330,6 +330,21 @@ bool EEPROM_Rotate::commit() {
 // -----------------------------------------------------------------------------
 // PRIVATE METHODS
 // -----------------------------------------------------------------------------
+
+extern "C" uint32_t _SPIFFS_end;
+
+/**
+ * @brief Calculates and automatically sets
+ * the number of sectors available for EEPROM.
+ * @protected
+ */
+void EEPROM_Rotate::_auto() {
+    uint32_t fs_end = (uint32_t)&_SPIFFS_end - 0x40200000;
+    uint32_t size = (ESP.getFlashChipSize() - fs_end) / SPI_FLASH_SEC_SIZE - 4;
+    if (size > 10) size = 10;
+    if (size < 1) size = 1;
+    _pool_size = size;
+}
 
 /**
  * @brief Returns sector from index
