@@ -206,6 +206,8 @@ void EEPROM_Rotate::dump(Stream & debug, uint32_t sector) {
         if (31 < b && b < 127) ascii[address % 16] = (char) b;
         debug.printf("%02X ", b);
 
+        yield();
+
     }
 
     delete[] data;
