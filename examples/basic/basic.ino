@@ -10,17 +10,23 @@ EEPROM_Rotate EEPROMr;
 
 void setup() {
 
+    // DEBUG -------------------------------------------------------------------
+
     Serial.begin(115200);
-    Serial.println();
-    Serial.println();
     delay(2000);
+    Serial.println();
+    Serial.println();
+
+    // EEPROM Initialization ---------------------------------------------------
 
     EEPROMr.size(4);
     EEPROMr.begin(4096);
-    Serial.println();
+
+    // Example -----------------------------------------------------------------
 
     uint8_t data;
 
+    Serial.println();
     Serial.printf("Position 0: 0x%02X\n", EEPROMr.read(0));
     Serial.printf("Position 1: 0x%02X\n", EEPROMr.read(1));
     Serial.printf("Position 2: 0x%02X\n", EEPROMr.read(2));

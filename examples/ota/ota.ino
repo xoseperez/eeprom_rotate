@@ -62,19 +62,20 @@ void otaSetup() {
 
     Serial.printf("[OTA] Ready\n");
 
-
 }
 
 void setup() {
+
+    // DEBUG -------------------------------------------------------------------
 
     Serial.begin(115200);
     delay(2000);
     Serial.println();
     Serial.println();
 
-    // -------------------------------------------------------------------------
+    // EEPROM Initialization ---------------------------------------------------
 
-    EEPROMr.size(2);
+    EEPROMr.size(4);
     EEPROMr.begin(256);
 
     Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.size());
@@ -86,15 +87,13 @@ void setup() {
     Serial.println();
     Serial.printf("[EEPROM] Current sector   : %u\n", EEPROMr.current());
 
-    // -------------------------------------------------------------------------
-
     uint8_t b = EEPROMr.read(10);
     Serial.println();
     Serial.printf("[EEPROM] Current value    : %u\n", b);
     EEPROMr.write(10, b+1);
     EEPROMr.commit();
 
-    // -------------------------------------------------------------------------
+    // WiFi & OTA Initialization -----------------------------------------------
 
     Serial.println();
     wifiSetup();
