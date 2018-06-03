@@ -51,10 +51,10 @@ bool EEPROM_Rotate::pool(uint8_t size) {
  * The library uses 3 bytes to track last valid sector, so there must be at least 3
  * bytes available in the memory buffer from the offset onwards.
  * Must be called before the begin method.
- * @param {uint8_t} offset      Offset
+ * @param {uint16_t} offset     Offset
  * @returns {bool}              True if seccessfully set
  */
-bool EEPROM_Rotate::offset(uint8_t offset) {
+bool EEPROM_Rotate::offset(uint16_t offset) {
     if (offset + 3 > SPI_FLASH_SEC_SIZE) return false;
     _offset = offset;
     return true;
