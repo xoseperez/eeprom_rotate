@@ -74,12 +74,12 @@ void setup() {
 
     // -------------------------------------------------------------------------
 
-    EEPROMr.pool(2);
+    EEPROMr.size(2);
     EEPROMr.begin(256);
 
-    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.pool());
+    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.size());
     Serial.printf("[EEPROM] Sectors in use   : ");
-    for (uint32_t i = 0; i < EEPROMr.pool(); i++) {
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
         if (i>0) Serial.print(", ");
         Serial.print(EEPROMr.base() - i);
     }

@@ -40,7 +40,7 @@ extern "C" uint32_t _SPIFFS_end;
  * @param {uint8_t} sectors     Number of sectors (from 1 to 10)
  * @returns {bool}              True if seccessfully set
  */
-bool EEPROM_Rotate::pool(uint8_t size) {
+bool EEPROM_Rotate::size(uint8_t size) {
     if (size < 1 || 10 < size) return false;
     _pool_size = size;
     return true;
@@ -89,7 +89,7 @@ uint32_t EEPROM_Rotate::current() {
  * @brief Returns the number of sectors used for rotating EEPROM.
  * @returns {uint8_t}           Sector pool size
  */
-uint8_t EEPROM_Rotate::pool() {
+uint8_t EEPROM_Rotate::size() {
     return _pool_size;
 }
 

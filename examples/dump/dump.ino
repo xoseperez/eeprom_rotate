@@ -14,7 +14,7 @@ void setup() {
     Serial.println();
 
     EEPROMr.begin(4096);
-    Serial.printf("[EEPROM] Dumpint data for sector #%u\n", EEPROMr.current());
+    Serial.printf("[EEPROM] Dumping data for sector #%u\n", EEPROMr.current());
     EEPROMr.dump(Serial);
 
 }

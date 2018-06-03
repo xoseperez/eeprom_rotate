@@ -13,13 +13,13 @@ void setup() {
     Serial.println();
     delay(2000);
 
-    EEPROMr.pool(4);
+    EEPROMr.size(4);
     EEPROMr.begin(4096);
     Serial.println();
 
-    Serial.printf("Sector pool size : %u\n", EEPROMr.pool());
+    Serial.printf("Sector pool size : %u\n", EEPROMr.size());
     Serial.printf("Sectors in use   : ");
-    for (uint32_t i = 0; i < EEPROMr.pool(); i++) {
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
         if (i>0) Serial.print(", ");
         Serial.print(EEPROMr.base() - i);
     }
@@ -31,9 +31,9 @@ void setup() {
     EEPROMr.backup();
     Serial.println();
 
-    Serial.printf("Sector pool size : %u\n", EEPROMr.pool());
+    Serial.printf("Sector pool size : %u\n", EEPROMr.size());
     Serial.printf("Sectors in use   : ");
-    for (uint32_t i = 0; i < EEPROMr.pool(); i++) {
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
         if (i>0) Serial.print(", ");
         Serial.print(EEPROMr.base() - i);
     }

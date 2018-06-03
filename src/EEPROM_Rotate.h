@@ -47,18 +47,18 @@ class EEPROM_Rotate: public EEPROMClass {
             _auto();
         };
 
-        bool pool(uint8_t size);
+        bool size(uint8_t size);
+        uint8_t size();
         bool offset(uint16_t offset);
-        uint32_t base();
-        uint32_t last();
-        uint32_t current();
-        uint8_t pool();
-        uint8_t reserved();
-        bool backup(uint32_t target = 0);
 
         void begin(size_t size);
         bool commit();
 
+        uint32_t base();
+        uint32_t last();
+        uint32_t current();
+        uint8_t reserved();
+        bool backup(uint32_t target = 0);
         bool erase(uint32_t sector);
         bool eraseAll();
         void dump(Stream & debug, uint32_t sector = 0);
@@ -67,6 +67,7 @@ class EEPROM_Rotate: public EEPROMClass {
 
         uint32_t _base = 0;
         uint8_t _pool_size = 1;
+
         uint16_t _offset = 0;
         uint8_t _sector_index = 0;
         uint8_t _sector_value = 0;

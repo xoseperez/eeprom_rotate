@@ -60,15 +60,15 @@ void setup() {
     Serial.println();
 
     // Not needed if we have already reserved several sectors in the memory layout
-    EEPROMr.pool(2);
+    EEPROMr.size(2);
 
     // Load data
     EEPROMr.begin(4096);
 
     Serial.printf("[EEPROM] Reserved sectors : %u\n", EEPROMr.reserved());
-    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.pool());
+    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.size());
     Serial.printf("[EEPROM] Sectors in use   : ");
-    for (uint32_t i = 0; i < EEPROMr.pool(); i++) {
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
         if (i>0) Serial.print(", ");
         Serial.print(EEPROMr.base() - i);
     }

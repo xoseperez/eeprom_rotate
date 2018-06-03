@@ -42,19 +42,17 @@ With every commit, the library will hop to the next sector. This way, in case of
 
 The library inherits form the Arduino Core for ESP8266 EEPROM library, and it shares the same API. You can just replace one with the other. The same public methods with the same signature. By default it will use the same sector as with the EEPROM library (sector 1019 for 4Mb boards, sector 251 for 1Mb boards), or you can specify another sector in the constructor. It can behave like a drop-in replacement.
 
-If you define a sector pool size different that one (using the `pool` method). The other sectors are the ones counting from the base one downwards. This means that if we set up a sector pool size of 4 for a 4Mb board using default base sector, the used sectors will be 1019, 1018, 1017 and 1016.
-
-You must take this into account since it reduces the available size for program memory and OTA updates.
+If you define a sector pool size different that one (using the `size` method). The other sectors are the ones counting from the base one downwards. This means that if we set up a sector pool size of 4 for a 4Mb board using default base sector, the used sectors will be 1019, 1018, 1017 and 1016.
 
 The library exposes a set of new methods to configure the sector rotating and performing other special actions:
 
-#### void pool(uint8_t size)
+#### void size(uint8_t size)
 
 Set the sector pool size the library will use. The default value is 1. The valid range is from 1 to 10. It must be called before the `begin` method.
 
-#### uint8_t pool()
+#### uint8_t size()
 
-Returns the number of sectors used for rotating EEPROM.
+Returns the number of sectors used to rotate EEPROM.
 
 #### void offset(uint8_t offset)
 
@@ -77,7 +75,7 @@ if (EEPROM.last() > 1000) { // 4Mb boards
 } else {
     size = 1;
 }
-EEPROM.pool(size);
+EEPROM.size(size);
 EEPROM.begin();
 ```
 
@@ -87,7 +85,7 @@ Returns the sector index whose contents match those of the EEPROM memory buffer.
 
 #### bool backup(uint32_t sector) | bool backup()
 
-Backups the current data to the given sector. If no sector is specified the base sector will be used. This is useful before an OTA update to move the configuration to the end of the memory space reducing the risk of it being overwritten by the OTA image.
+Backups the current data to the given sector. If no sector is specified the base sector will be used. This is useful before an OTA update to move the configuration to the end of the memory space preventing it from being overwritten by the OTA image.
 
 #### bool erase(uint32_t sector)
 
@@ -101,7 +99,7 @@ Erases all the sections in the rotation pool. Use with caution.
 
 Dumps the EEPROM data to the given stream in a human-friendly way. If no sector is specified it will dump the data for the current sector.
 
-## Notes
+## Advanced
 
 ### Disabling the original global EEPROM object
 
@@ -110,6 +108,98 @@ already available to use. This consumes little memory (since the data buffer is
 only created and populated when calling `begin`). But anyway if you don't want to
 have a unused object around you can disable the object instantiation by using
 the `NO_GLOBAL_EEPROM` build flag.
+
+## Auto discover EEPROM size
+
+If you are using a custom memory layout the library will automatically discover the number of available sectors for EEPROM. These will be the number of sectors after the SPIFFS memmory space except for the last 4 (reserved by Espressif).
+
+This is the original memory layout configuration for a 1Mb flash size board with no SPIFFS space (eagle.flash.1m0.ld):
+
+```
+/* Flash Split for 1M chips */
+/* sketch 999KB */
+/* eeprom 20KB */
+
+MEMORY
+{
+  dport0_0_seg :                        org = 0x3FF00000, len = 0x10
+  dram0_0_seg :                         org = 0x3FFE8000, len = 0x14000
+  iram1_0_seg :                         org = 0x40100000, len = 0x8000
+  irom0_0_seg :                         org = 0x40201010, len = 0xf9ff0
+}
+
+PROVIDE ( _SPIFFS_start = 0x402FB000 );
+PROVIDE ( _SPIFFS_end = 0x402FB000 );
+PROVIDE ( _SPIFFS_page = 0x0 );
+PROVIDE ( _SPIFFS_block = 0x0 );
+
+INCLUDE "../ld/eagle.app.v6.common.ld"
+```
+
+Flash memory is mapped at 0x40200000, so a 1Mb flash memory ends at 0x40300000. Here you can see the end of the SPIFFS block is at 0x402FB000. so there are 20480 bytes after that point. Every sector has 4096 bytes so thats 5 sectors. Given that the last for are reserved there is one left for EEPROM.
+
+Now let's see this custom layout:
+
+```
+/* Flash Split for 4M chips */
+/* sketch 1019KB */
+/* spiffs 3040KB */
+/* eeprom 16KB */
+/* reserved 16KB */
+
+MEMORY
+{
+  dport0_0_seg :                        org = 0x3FF00000, len = 0x10
+  dram0_0_seg :                         org = 0x3FFE8000, len = 0x14000
+  iram1_0_seg :                         org = 0x40100000, len = 0x8000
+  irom0_0_seg :                         org = 0x40201010, len = 0xfeff0
+}
+
+PROVIDE ( _SPIFFS_start = 0x40300000 );
+PROVIDE ( _SPIFFS_end = 0x405F8000 );
+PROVIDE ( _SPIFFS_page = 0x100 );
+PROVIDE ( _SPIFFS_block = 0x2000 );
+
+INCLUDE "eagle.app.v6.common.ld"
+```
+
+Now this is a 4Mb board (like the in the ESP12 modules). Flash memory ends at (0x40200000 + 4*1024*1024) 0x40600000. Therefore, after the SPIFFS block there are still 32768 bytes or 8 sectors. 4 of them are reserved, so 4 more are available to rotate the EEPROM contents.
+
+Check the info example in the examples folder.
+
+### OTA (and non-OTA) upgrades
+
+You can use custom memory layouts to "reserve" memory sectors for EEPROM rotating like in the section before. But there is no need for it as long as you take some precautions. Basically, if are using more than one sector and you have not reserved them, all of them but the last will be overwritten when doing an OTA upgrade, because OTA images are first stored at the end of the firmware block. What can you do?
+
+Imagine these scenarios for a 4 sector pool size, with and without SPIFFS block:
+
+```
+               | Firmware ->           <- OTA| SPIFFS     |E|RSRV|
+Memory layout: |---------------<<<<<<<<<<<<<<|------------|-|----|
+Actual use:    |---------------<<<<<<<<<<<<<<|---------|----|----|
+                                                        ^^^
+                            These sectors are used for EEPROM but they are
+                                 actually part of the SPIFFS block
+
+
+
+               | Firmware ->                        <- OTA|E|RSRV|
+Memory layout: |----------------------------<<<<<<<<<<<<<<|-|----|
+Actual use:    |----------------------------<<<<<<<<<<<|<<--|----|
+                                                        ^^^
+                            These sectors are used for EEPROM but they are
+                                 actually part of the firmware block
+                                   and will be used by an OTA image
+                                   ```
+
+
+Well, the library has a special method called `backup` that will backup the contents of the current memory buffer to any given sector. If you call it with no parameters it will save them to the last sector in the pool, the one that's safe from OTA.
+
+So, whenever you do an OTA upgrade (being it firmware or the SPIFFS image) call the `backup()` method first. The ArduinoOTA library has a `onStart` callback you can use to backup the contents. Same for the Update class.
+
+There is still one special case that could be a problem: non-OTA upgrades. In a wired upgrade the firmware has no control of the situation and it cannot backup the EEPROM before the upgrade. If your image is large enough it may overwrite the sectors in use for the EEPROM pool. For a firmware image this is very unlikely, only with old 512Kb memory chips you may run into problems when flashing big images.
+
+But when flashing the filesystem you will always hit this problem, because it always overwrites the full SPIFFS block. So if you flashing the SPIFFS block and want to keep the EEPROM configuration you have two options: a custom memory layout that really reserves more sectors for EEPROM or upgrade it always over the air and program your firmware so it first backs up the EEPROM contents to the latest sector using `backup`.
 
 ## License
 
