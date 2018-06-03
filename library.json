@@ -1,7 +1,7 @@
 {
     "name": "EEPROM_Rotate",
     "keywords": "eeprom,spi,flash",
-    "description": "EEPROM wrapper class for ESP8266 that supports data rotate between multiple sectors",
+    "description": "EEPROM wrapper for ESP8266 that handles sector rotation",
     "repository": {
         "type": "git",
         "url": "https://github.com/xoseperez/eeprom_rotate.git"

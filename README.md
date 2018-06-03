@@ -184,8 +184,8 @@ Actual use:    |----------------------------<<<<<<<<<<<|<<--|----|
                             These sectors are used for EEPROM but they are
                                  actually part of the firmware block
                                    and will be used by an OTA image
-                                   ```
 
+```
 
 Well, the library has a special method called `backup` that will backup the contents of the current memory buffer to any given sector. If you call it with no parameters it will save them to the last sector in the pool, the one that's safe from OTA.
 
