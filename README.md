@@ -2,6 +2,8 @@
 
 This is a wrapper around the Arduino Core for ESP8266 EEPROM library that handles sector rotating while keeping full compatibility with the original API.
 
+If you are using the ESP32, visit the repository for the ESP8266 version of this library here: https://github.com/xoseperez/eeprom32_rotate
+
 [![version](https://img.shields.io/badge/version-0.1.1-brightgreen.svg)](CHANGELOG.md)
 [![travis](https://travis-ci.org/xoseperez/eeprom_rotate.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate)
 [![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate/dashboard)
@@ -18,7 +20,7 @@ A way to overcome this is to use more than one sector to store data and check on
 
 This is what this library does.
 
-## How does it work
+## How does it work?
 
 Instead of using a single sector to persist the data from the emulated EEPROM, this library uses a number of sectors to do so: a sector pool.
 
@@ -56,7 +58,7 @@ Returns the number of sectors used to rotate EEPROM.
 
 #### void offset(uint8_t offset)
 
-Define the offset in the sector where the special auto-increment and CRC values will be stores. The default value is 0. This special data uses 3 bytes of space in the emulated EEPROM memory buffer.
+Define the offset in the sector where the special auto-increment and CRC values will be stored. The default value is 0. This special data uses 3 bytes of space in the emulated EEPROM memory buffer.
 
 #### uint8_t base()
 
@@ -86,14 +88,6 @@ Returns the sector index whose contents match those of the EEPROM memory buffer.
 #### bool backup(uint32_t sector) | bool backup()
 
 Backups the current data to the given sector. If no sector is specified the base sector will be used. This is useful before an OTA update to move the configuration to the end of the memory space preventing it from being overwritten by the OTA image.
-
-#### bool erase(uint32_t sector)
-
-Erases the given sector. Use with caution.
-
-#### bool eraseAll()
-
-Erases all the sections in the rotation pool. Use with caution.
 
 #### void dump(Stream & debug, uint32_t sector) | void dump(Stream & debug)
 

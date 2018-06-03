@@ -59,8 +59,6 @@ class EEPROM_Rotate: public EEPROMClass {
         uint32_t current();
         uint8_t reserved();
         bool backup(uint32_t target = 0);
-        bool erase(uint32_t sector);
-        bool eraseAll();
         void dump(Stream & debug, uint32_t sector = 0);
 
     protected:

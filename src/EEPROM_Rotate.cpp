@@ -144,30 +144,6 @@ bool EEPROM_Rotate::backup(uint32_t target) {
 }
 
 /**
- * @brief Erases the given sector. Use with caution.
- * @param {uint32_t} sector     Sector to erase
- * @returns {bool}              True if seccessfully erased
- */
-bool EEPROM_Rotate::erase(uint32_t sector) {
-    noInterrupts();
-    bool ret = (spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK);
-    interrupts();
-    return ret;
-}
-
-/**
- * @brief Erases all the sectors in the current EEPROM sector pool. Use with caution.
- * @returns {bool}              True if seccessfully erased
- */
-bool EEPROM_Rotate::eraseAll() {
-    bool ret = true;
-    for (uint32_t index = 0; index < _pool_size; index++) {
-        ret = ret & erase(_getSector(index));
-    }
-    return ret;
-}
-
-/**
  * @brief Dumps the EEPROM data to the given stream in a human-friendly way.
  * @param {Stream &}  debug     Stream to dump the data to
  * @param {uint32_t} sector     Sector to dump (default to current sector)
