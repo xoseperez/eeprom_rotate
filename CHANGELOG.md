@@ -10,4 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Examples on how to use custom memory layouts
 - Auto-discover EEPROM pool size based on memory layout
+- Added yield to dump loop
 - OTA example
+
+## [0.9.0] 2018-06-03
+### Changed
+- Renamed `pool` as `size`
+- Deleted `erase` and `eraseAll` methods
+
+### Fixed
+- Fix offset variable size

@@ -1,5 +1,5 @@
 /*
- *  This sketch dumps the default EEPROM sector memory
+ *  This sketch shows how to backup EEPROM data before an OTA upgrade
  */
 
 #include <EEPROM_Rotate.h>

@@ -4,7 +4,7 @@ This is a wrapper around the Arduino Core for ESP8266 EEPROM library that handle
 
 If you are using the ESP32, visit the repository for the ESP8266 version of this library here: https://github.com/xoseperez/eeprom32_rotate
 
-[![version](https://img.shields.io/badge/version-0.1.1-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.0-brightgreen.svg)](CHANGELOG.md)
 [![travis](https://travis-ci.org/xoseperez/eeprom_rotate.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate)
 [![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate/dashboard)
 [![license](https://img.shields.io/github/license/xoseperez/eeprom_rotate.svg)](LICENSE)
@@ -105,7 +105,7 @@ the `NO_GLOBAL_EEPROM` build flag.
 
 ## Auto discover EEPROM size
 
-If you are using a custom memory layout the library will automatically discover the number of available sectors for EEPROM. These will be the number of sectors after the SPIFFS memmory space except for the last 4 (reserved by Espressif).
+If you are using a custom memory layout the library will automatically discover the number of available sectors for EEPROM. These will be the number of sectors after the SPIFFS memory space except for the last 4 (reserved by Espressif).
 
 This is the original memory layout configuration for a 1Mb flash size board with no SPIFFS space (eagle.flash.1m0.ld):
 
@@ -130,7 +130,7 @@ PROVIDE ( _SPIFFS_block = 0x0 );
 INCLUDE "../ld/eagle.app.v6.common.ld"
 ```
 
-Flash memory is mapped at 0x40200000, so a 1Mb flash memory ends at 0x40300000. Here you can see the end of the SPIFFS block is at 0x402FB000. so there are 20480 bytes after that point. Every sector has 4096 bytes so thats 5 sectors. Given that the last for are reserved there is one left for EEPROM.
+Flash memory is mapped at 0x40200000, so a 1Mb flash memory ends at 0x40300000. Here you can see the end of the SPIFFS block is at 0x402FB000. So there are 20480 bytes after that point. Every sector has 4096 bytes so thats 5 sectors. Given that the last for are reserved there is one left for EEPROM.
 
 Now let's see this custom layout:
 
@@ -193,7 +193,7 @@ So, whenever you do an OTA upgrade (being it firmware or the SPIFFS image) call 
 
 There is still one special case that could be a problem: non-OTA upgrades. In a wired upgrade the firmware has no control of the situation and it cannot backup the EEPROM before the upgrade. If your image is large enough it may overwrite the sectors in use for the EEPROM pool. For a firmware image this is very unlikely, only with old 512Kb memory chips you may run into problems when flashing big images.
 
-But when flashing the filesystem you will always hit this problem, because it always overwrites the full SPIFFS block. So if you flashing the SPIFFS block and want to keep the EEPROM configuration you have two options: a custom memory layout that really reserves more sectors for EEPROM or upgrade it always over the air and program your firmware so it first backs up the EEPROM contents to the latest sector using `backup`.
+But when flashing the file system you will always hit this problem, because it always overwrites the full SPIFFS block. So if you flashing the SPIFFS block and want to keep the EEPROM configuration you have two options: a custom memory layout that really reserves more sectors for EEPROM or upgrade it always over the air and program your firmware so it first backs up the EEPROM contents to the latest sector using `backup`.
 
 ## License
 
