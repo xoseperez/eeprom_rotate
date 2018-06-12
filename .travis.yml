@@ -11,4 +11,4 @@ script:
     - pushd examples/basic && pio run && popd
     - pushd examples/dump && pio run && popd
     - pushd examples/info && pio run && popd
-    - pushd examples/ota && pio run && popd
+    - pushd examples/ota && cp credentials.h.sample credentials.h && pio run && popd
