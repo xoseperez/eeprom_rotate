@@ -36,11 +36,16 @@ void otaSetup() {
 
         // If we are not specifically reserving the sectors we are using as
         // EEPROM in the memory layout then any OTA upgrade will overwrite
-        // all but the last one. Calling `backup` without arguments
-        // before the upgrade forces the EEPROM_Rotate library to copy
-        // the current configuration to the last sector,
-        // thus preserving the information.
-        EEPROMr.backup();
+        // all but the last one.
+        // Calling rotate(false) disables rotation so all writes will be done
+        // to the last sector. It also sets the dirty flag to true so the next commit()
+        // will actually persist current configuration to that last sector.
+        // Calling rotate(false) will also prevent any other EEPROM write
+        // to overwrite the OTA image.
+        // In case the OTA process fails, reenable rotation.
+        // See onError callback below.
+        EEPROMr.rotate(false);
+        EEPROMr.commit();
 
         Serial.printf("[OTA] Start\n");
 
@@ -48,6 +53,7 @@ void otaSetup() {
 
     ArduinoOTA.onEnd([]() {
         Serial.printf("[OTA] End\n");
+        // Here the board will reboot
     });
 
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -56,6 +62,10 @@ void otaSetup() {
 
     ArduinoOTA.onError([](ota_error_t error) {
         Serial.printf("[OTA] Error #%u\n", error);
+
+        // There's been an error, reenable rotation
+        EEPROMr.rotate(true);
+
     });
 
     ArduinoOTA.begin();

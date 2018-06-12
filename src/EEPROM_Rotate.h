@@ -58,6 +58,7 @@ class EEPROM_Rotate: public EEPROMClass {
         uint32_t last();
         uint32_t current();
         uint8_t reserved();
+        bool rotate(bool value);
         bool backup(uint32_t target = 0);
         void dump(Stream & debug, uint32_t sector = 0);
 
@@ -69,6 +70,8 @@ class EEPROM_Rotate: public EEPROMClass {
         uint16_t _offset = 0;
         uint8_t _sector_index = 0;
         uint8_t _sector_value = 0;
+
+        bool _enabled = true;
 
         void _auto();
         uint32_t _getSector(uint8_t index);

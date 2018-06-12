@@ -144,6 +144,21 @@ bool EEPROM_Rotate::backup(uint32_t target) {
 }
 
 /**
+ * @brief Enable or disable sector rotation.
+ * If disabled it will always write to the last sector.
+ * This is useful if you are doing something that might use the other sectors
+ * (like an OTA upgrade) and you don't want the library to mess with them.
+ * Disabling rotation also sets the _dirty flag to True,
+ * so it forces next commit to persist the data to the last sector.
+ * @param {bool} value      True to enable (and let them rotate), False to disable
+ * @returns {bool}          Current rotating status
+ */
+bool EEPROM_Rotate::rotate(bool value) {
+    if (false == value) _dirty = true;
+    return (_enabled = value);
+}
+
+/**
  * @brief Dumps the EEPROM data to the given stream in a human-friendly way.
  * @param {Stream &}  debug     Stream to dump the data to
  * @param {uint32_t} sector     Sector to dump (default to current sector)
@@ -282,8 +297,16 @@ bool EEPROM_Rotate::commit() {
     uint8_t index_backup = _sector_index;
     uint8_t value_backup = _sector_value;
 
+    // Calculate the sector to write to
+    if (_enabled) {
+        // Get the sector for the next write
+        _sector_index = (_sector_index + 1) % _pool_size;
+    } else {
+        // If rotation is disabled write always to the last sector (index 0)
+        _sector_index = 0;
+    }
+
     // Update sector for next write
-    _sector_index = (_sector_index + 1) % _pool_size;
     _sector = _getSector(_sector_index);
     _sector_value++;
 

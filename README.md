@@ -48,21 +48,21 @@ If you define a sector pool size different that one (using the `size` method). T
 
 The library exposes a set of new methods to configure the sector rotating and performing other special actions:
 
-#### void size(uint8_t size)
+#### bool backup(uint32_t sector) | bool backup()
 
-Set the sector pool size the library will use. The default value is 1. The valid range is from 1 to 10. It must be called before the `begin` method.
-
-#### uint8_t size()
-
-Returns the number of sectors used to rotate EEPROM.
-
-#### void offset(uint8_t offset)
-
-Define the offset in the sector where the special auto-increment and CRC values will be stored. The default value is 0. This special data uses 3 bytes of space in the emulated EEPROM memory buffer.
+Backups the current data to the given sector. If no sector is specified the base sector will be used. See also the `rotate` method.
 
 #### uint8_t base()
 
 Returns the base sector. Note that sectors in use are those N sectors before the base sector, including the base sector. If base sector is 1019 and sector pool size is 4, these sectors will be 1019, 1018, 1017 and 1016.
+
+#### uint8_t current()
+
+Returns the sector index whose contents match those of the EEPROM memory buffer.
+
+#### void dump(Stream & debug, uint32_t sector) | void dump(Stream & debug)
+
+Dumps the EEPROM data to the given stream in a human-friendly way. If no sector is specified it will dump the data for the current sector.
 
 #### uint8_t last()
 
@@ -81,17 +81,36 @@ EEPROM.size(size);
 EEPROM.begin();
 ```
 
-#### uint8_t current()
+#### void offset(uint8_t offset)
 
-Returns the sector index whose contents match those of the EEPROM memory buffer.
+Define the offset in the sector where the special auto-increment and CRC values will be stored. The default value is 0. This special data uses 3 bytes of space in the emulated EEPROM memory buffer.
 
-#### bool backup(uint32_t sector) | bool backup()
+#### bool rotate(uint32_t value)
 
-Backups the current data to the given sector. If no sector is specified the base sector will be used. This is useful before an OTA update to move the configuration to the end of the memory space preventing it from being overwritten by the OTA image.
+Enables or disables sector rotation (it is enabled by default). If disabled, it will always write to the last sector. This is useful if you are doing something that might use the other sectors (like an OTA upgrade) and you don't want the library to mess with them. Disabling rotation also sets the `_dirty` flag to True, so it forces next commit to persist the data to the last sector.
 
-#### void dump(Stream & debug, uint32_t sector) | void dump(Stream & debug)
+It is recommended to backup the data to the last sector before doing an OTA upgrade and disable sector rotation to prevent any EEPROM call to overwrite the OTA image. The suggested way to do it is to call this code in the OTA start callback:
 
-Dumps the EEPROM data to the given stream in a human-friendly way. If no sector is specified it will dump the data for the current sector.
+```
+EEPROM.rotate(false);
+EEPROM.commit();
+```
+
+In case the upgrade fails, you might want to reenable sector rotation by calling:
+
+```
+EEPROM.rotate(true);
+```
+
+See the OTA example for this library.
+
+#### void size(uint8_t size)
+
+Set the sector pool size the library will use. The default value is 1. The valid range is from 1 to 10. It must be called before the `begin` method.
+
+#### uint8_t size()
+
+Returns the number of sectors used to rotate EEPROM.
 
 ## Advanced
 
