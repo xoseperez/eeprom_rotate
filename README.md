@@ -4,7 +4,9 @@ This is a wrapper around the Arduino Core for ESP8266 EEPROM library that handle
 
 If you are using the ESP32, visit the repository for the ESP8266 version of this library here: https://github.com/xoseperez/eeprom32_rotate
 
-[![version](https://img.shields.io/badge/version-0.9.0-brightgreen.svg)](CHANGELOG.md)
+Read my post about these libraries here: http://tinkerman.cat/eeprom-rotation-for-esp8266-and-esp32/
+
+[![version](https://img.shields.io/badge/version-0.9.1-brightgreen.svg)](CHANGELOG.md)
 [![travis](https://travis-ci.org/xoseperez/eeprom_rotate.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate)
 [![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate/dashboard)
 [![license](https://img.shields.io/github/license/xoseperez/eeprom_rotate.svg)](LICENSE)
@@ -184,35 +186,21 @@ Check the info example in the examples folder.
 
 You can use custom memory layouts to "reserve" memory sectors for EEPROM rotating like in the section before. But there is no need for it as long as you take some precautions. Basically, if are using more than one sector and you have not reserved them, all of them but the last will be overwritten when doing an OTA upgrade, because OTA images are first stored at the end of the firmware block. What can you do?
 
-Imagine these scenarios for a 4 sector pool size, with and without SPIFFS block:
+Imagine these scenarios for a 3 sector pool size, with and without SPIFFS block:
 
-```
-               | Firmware ->           <- OTA| SPIFFS     |E|RSRV|
-Memory layout: |---------------<<<<<<<<<<<<<<|------------|-|----|
-Actual use:    |---------------<<<<<<<<<<<<<<|---------|----|----|
-                                                        ^^^
-                            These sectors are used for EEPROM but they are
-                                 actually part of the SPIFFS block
+![OTA upgrade, no SPPIFS](images/rotate-spiffs-fsota.png)
 
+![OTA upgrade, no SPPIFS](images/rotate-nospiffs-fota.png)
 
+The library has the option to disable rotation and force persisting data to the latest sector, the one that's safe from OTA.
 
-               | Firmware ->                        <- OTA|E|RSRV|
-Memory layout: |----------------------------<<<<<<<<<<<<<<|-|----|
-Actual use:    |----------------------------<<<<<<<<<<<|<<--|----|
-                                                        ^^^
-                            These sectors are used for EEPROM but they are
-                                 actually part of the firmware block
-                                   and will be used by an OTA image
-
-```
-
-Well, the library has a special method called `backup` that will backup the contents of the current memory buffer to any given sector. If you call it with no parameters it will save them to the last sector in the pool, the one that's safe from OTA.
-
-So, whenever you do an OTA upgrade (being it firmware or the SPIFFS image) call the `backup()` method first. The ArduinoOTA library has a `onStart` callback you can use to backup the contents. Same for the Update class.
+So, whenever you do an OTA upgrade (being it firmware or the SPIFFS image) call  `rotate(false)` method first and then `commit()` to force saving the data. The ArduinoOTA library has a `onStart` callback you can use to backup the contents. Same for the Update class. See the `rotate` method above or the OTA example to know more. In case the OTA fails, you might want to reenable rotation calling `rotate(true)` in the `onError` callback.
 
 There is still one special case that could be a problem: non-OTA upgrades. In a wired upgrade the firmware has no control of the situation and it cannot backup the EEPROM before the upgrade. If your image is large enough it may overwrite the sectors in use for the EEPROM pool. For a firmware image this is very unlikely, only with old 512Kb memory chips you may run into problems when flashing big images.
 
-But when flashing the file system you will always hit this problem, because it always overwrites the full SPIFFS block. So if you flashing the SPIFFS block and want to keep the EEPROM configuration you have two options: a custom memory layout that really reserves more sectors for EEPROM or upgrade it always over the air and program your firmware so it first backs up the EEPROM contents to the latest sector using `backup`.
+But when flashing the file system you will always hit this problem, because it always overwrites the full SPIFFS block. So if you flashing the SPIFFS block and want to keep the EEPROM configuration you have two options: a custom memory layout that really reserves more sectors for EEPROM or upgrade it always over the air and program your firmware so it first backs up the EEPROM contents to the latest sector using `rotate(false)` and `commit()`.
+
+Doing `rotate(false)` and `commit()` has a benefit over `backup()` that it will prevent any other EEPROM write to overwrite the OTA image, preventing corruption.
 
 ## License
 
