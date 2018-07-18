@@ -6,23 +6,23 @@
 # Classes (KEYWORD1)
 #######################################
 
-EEPROM_Rotate           KEYWORD1
+EEPROM_Rotate	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-size                    KEYWORD2
-offset                  KEYWORD2
-begin                   KEYWORD2
-commit                  KEYWORD2
-base                    KEYWORD2
-last                    KEYWORD2
-current                 KEYWORD2
-reserved                KEYWORD2
-rotate                  KEYWORD2
-backup                  KEYWORD2
-dump                    KEYWORD2
+size	KEYWORD2
+offset	KEYWORD2
+begin	KEYWORD2
+commit	KEYWORD2
+base	KEYWORD2
+last	KEYWORD2
+current	KEYWORD2
+reserved	KEYWORD2
+rotate	KEYWORD2
+backup	KEYWORD2
+dump	KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)
@@ -32,5 +32,5 @@ dump                    KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
-EEPROM_ROTATE_CRC_OFFSET        LITERAL1
-EEPROM_ROTATE_COUNTER_OFFSET    LITERAL1
+EEPROM_ROTATE_CRC_OFFSET	LITERAL1
+EEPROM_ROTATE_COUNTER_OFFSET	LITERAL1
