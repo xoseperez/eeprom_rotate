@@ -1,6 +1,6 @@
 /*
 
-EEPROM Rotate 0.9.1
+EEPROM Rotate 0.9.2
 
 EEPROM wrapper for ESP8266
 

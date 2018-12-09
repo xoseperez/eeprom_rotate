@@ -6,7 +6,7 @@ If you are using the ESP32, visit the repository for the ESP8266 version of this
 
 Read my post about these libraries here: http://tinkerman.cat/eeprom-rotation-for-esp8266-and-esp32/
 
-[![version](https://img.shields.io/badge/version-0.9.1-brightgreen.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.2-brightgreen.svg)](CHANGELOG.md)
 [![travis](https://travis-ci.org/xoseperez/eeprom_rotate.svg?branch=master)](https://travis-ci.org/xoseperez/eeprom_rotate)
 [![codacy](https://img.shields.io/codacy/grade/2f06a871848345368445ea1b74796f4c/master.svg)](https://www.codacy.com/app/xoseperez/eeprom_rotate/dashboard)
 [![license](https://img.shields.io/github/license/xoseperez/eeprom_rotate.svg)](LICENSE)
