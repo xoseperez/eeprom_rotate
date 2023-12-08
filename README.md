@@ -44,9 +44,9 @@ With every commit, the library will hop to the next sector. This way, in case of
 
 ## API
 
-The library inherits form the Arduino Core for ESP8266 EEPROM library, and it shares the same API. You can just replace one with the other. The same public methods with the same signature. By default it will use the same sector as with the EEPROM library (sector 1019 for 4Mb boards, sector 251 for 1Mb boards), or you can specify another sector in the constructor. It can behave like a drop-in replacement.
+The library inherits form the Arduino Core for ESP8266 EEPROM library, and it shares the same API. You can just replace one with the other. The same public methods with the same signature. By default it will use the same sector as with the EEPROM library (sector 1019 for 4MiB boards, sector 251 for 1MiB boards), or you can specify another sector in the constructor. It can behave like a drop-in replacement.
 
-If you define a sector pool size different that one (using the `size` method). The other sectors are the ones counting from the base one downwards. This means that if we set up a sector pool size of 4 for a 4Mb board using default base sector, the used sectors will be 1019, 1018, 1017 and 1016.
+If you define a sector pool size different that one (using the `size` method). The other sectors are the ones counting from the base one downwards. This means that if we set up a sector pool size of 4 for a 4MiB board using default base sector, the used sectors will be 1019, 1018, 1017 and 1016.
 
 The library exposes a set of new methods to configure the sector rotating and performing other special actions:
 
@@ -72,9 +72,9 @@ Returns the number of the last available sector for EEPROM. This is also the sec
 
 ```
 uint8_t size = 0;
-if (EEPROM.last() > 1000) { // 4Mb boards
+if (EEPROM.last() > 1000) { // 4MiB boards
     size = 4;
-} else if (EEPROM.last() > 250) { // 1Mb boards
+} else if (EEPROM.last() > 250) { // 1MiB boards
     size = 2;
 } else {
     size = 1;
@@ -128,10 +128,10 @@ the `NO_GLOBAL_EEPROM` build flag.
 
 If you are using a custom memory layout the library will automatically discover the number of available sectors for EEPROM. These will be the number of sectors after the SPIFFS memory space except for the last 4 (reserved by Espressif).
 
-This is the original memory layout configuration for a 1Mb flash size board with no SPIFFS space (eagle.flash.1m0.ld):
+This is the original memory layout configuration for a 1MiB flash size board with no SPIFFS space (eagle.flash.1m0.ld):
 
 ```
-/* Flash Split for 1M chips */
+/* Flash Split for 1MiB chips */
 /* sketch 999KB */
 /* eeprom 20KB */
 
@@ -151,7 +151,7 @@ PROVIDE ( _SPIFFS_block = 0x0 );
 INCLUDE "../ld/eagle.app.v6.common.ld"
 ```
 
-Flash memory is mapped at 0x40200000, so a 1Mb flash memory ends at 0x40300000. Here you can see the end of the SPIFFS block is at 0x402FB000. So there are 20480 bytes after that point. Every sector has 4096 bytes so thats 5 sectors. Given that the last for are reserved there is one left for EEPROM.
+Flash memory is mapped at 0x40200000, so a 1MiB flash memory ends at 0x40300000. Here you can see the end of the SPIFFS block is at 0x402FB000. So there are 20480 bytes after that point. Every sector has 4096 bytes so thats 5 sectors. Given that the last for are reserved there is one left for EEPROM.
 
 Now let's see this custom layout:
 
@@ -178,7 +178,7 @@ PROVIDE ( _SPIFFS_block = 0x2000 );
 INCLUDE "eagle.app.v6.common.ld"
 ```
 
-Now this is a 4Mb board (like the in the ESP12 modules). Flash memory ends at (0x40200000 + 4*1024*1024) 0x40600000. Therefore, after the SPIFFS block there are still 32768 bytes or 8 sectors. 4 of them are reserved, so 4 more are available to rotate the EEPROM contents.
+Now this is a 4MiB board (like the in the ESP12 modules). Flash memory ends at (0x40200000 + 4*1024*1024) 0x40600000. Therefore, after the SPIFFS block there are still 32768 bytes or 8 sectors. 4 of them are reserved, so 4 more are available to rotate the EEPROM contents.
 
 Check the info example in the examples folder.
 
