@@ -2,7 +2,7 @@
 
 This is a wrapper around the Arduino Core for ESP8266 EEPROM library that handles sector rotating while keeping full compatibility with the original API.
 
-If you are using the ESP32, visit the repository for the ESP8266 version of this library here: https://github.com/xoseperez/eeprom32_rotate
+If you are using the ESP32, visit the repository for the ESP32 version of this library here: https://github.com/xoseperez/eeprom32_rotate
 
 Read my post about these libraries here: http://tinkerman.cat/eeprom-rotation-for-esp8266-and-esp32/
 
